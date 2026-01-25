@@ -19,10 +19,12 @@ export async function POST(req) {
     });
 
     // 3. Translate your history for Gemini
-    const chatHistory = history.map((msg) => ({
-      role: msg.role === "user" ? "user" : "model",
-      parts: [{ text: msg.text }],
-    }));
+    const chatHistory = history.map(function (msg) {
+      return {
+        role: msg.role === "user" ? "user" : "model",
+        parts: [{ text: msg.text }],
+      };
+    });
 
     // --- THE FIX STARTS HERE ---
     // Gemini CRASHES if the history starts with a 'model' message.

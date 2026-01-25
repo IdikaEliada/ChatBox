@@ -18,12 +18,15 @@ export default function Chat() {
   const messagesEndRef = useRef(null);
 
   // EFFECT: Whenever 'messages' changes, scroll to bottom
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  useEffect(
+    function () {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    },
+    [messages],
+  );
 
   // FUNCTION: Send the message
-  const handleSend = async () => {
+  async function handleSend() {
     if (!input.trim()) return; // Don't send empty messages
 
     // 1. Add YOUR message to the list immediately
@@ -50,7 +53,7 @@ export default function Chat() {
     }
 
     setLoading(false); // Stop loading
-  };
+  }
 
   // UI: What the user actually sees
   return (
@@ -62,16 +65,18 @@ export default function Chat() {
 
       {/* Chat Messages Area */}
       <div className={styles.chatBox}>
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`${styles.message} ${
-              msg.role === "user" ? styles.userMsg : styles.botMsg
-            }`}
-          >
-            {msg.text}
-          </div>
-        ))}
+        {messages.map(function (msg, index) {
+          return (
+            <div
+              key={index}
+              className={`${styles.message} ${
+                msg.role === "user" ? styles.userMsg : styles.botMsg
+              }`}
+            >
+              {msg.text}
+            </div>
+          );
+        })}
 
         {loading && (
           <div className={styles.message + " " + styles.botMsg}>
@@ -88,8 +93,12 @@ export default function Chat() {
         <input
           className={styles.input}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSend()} // Send on Enter key
+          onChange={function (e) {
+            setInput(e.target.value);
+          }}
+          onKeyDown={function (e) {
+            if (e.key === "Enter") handleSend();
+          }} // Send on Enter key
           placeholder="Type a message..."
           disabled={loading}
         />
