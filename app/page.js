@@ -8,7 +8,7 @@ export default function Chat() {
   const [messages, setMessages] = useState([
     {
       role: "model",
-      text: "Hello Jhay! I'm ready to code. What's on your mind?",
+      text: "Hello There! What's on your mind?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -60,7 +60,7 @@ export default function Chat() {
     <div className={styles.container}>
       {/* Header */}
       <div className={styles.header}>
-        <h1>✨ Jhay&apos;s AI Chat</h1>
+        <h1>Jhay's AI Chat</h1>
       </div>
 
       {/* Chat Messages Area */}
