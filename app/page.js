@@ -1,66 +1,106 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+import { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import styles from "./Chat.module.css"; // Import our styles
 
-export default function Home() {
+export default function Chat() {
+  // STATE: This is the memory of our app
+  const [messages, setMessages] = useState([
+    {
+      role: "model",
+      text: "Hello Jhay! I'm ready to code. What's on your mind?",
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // REF: This helps us scroll to the bottom automatically
+  const messagesEndRef = useRef(null);
+
+  // EFFECT: Whenever 'messages' changes, scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // FUNCTION: Send the message
+  const handleSend = async () => {
+    if (!input.trim()) return; // Don't send empty messages
+
+    // 1. Add YOUR message to the list immediately
+    const newHistory = [...messages, { role: "user", text: input }];
+    setMessages(newHistory);
+    setInput(""); // Clear the input box
+    setLoading(true); // Show loading state
+
+    try {
+      // 2. Send the whole history to our Backend API
+      const response = await axios.post("/api/chat", {
+        message: input,
+        history: messages, // We send past messages so it has context
+      });
+
+      // 3. Add the AI's response to the list
+      setMessages([...newHistory, { role: "model", text: response.data.text }]);
+    } catch (error) {
+      console.error("Error:", error);
+      const errorMessage =
+        error.response?.data?.error ||
+        "Sorry, I encountered an error. Try again!";
+      setMessages([...newHistory, { role: "model", text: errorMessage }]);
+    }
+
+    setLoading(false); // Stop loading
+  };
+
+  // UI: What the user actually sees
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className={styles.container}>
+      {/* Header */}
+      <div className={styles.header}>
+        <h1>✨ Jhay&apos;s AI Chat</h1>
+      </div>
+
+      {/* Chat Messages Area */}
+      <div className={styles.chatBox}>
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            className={`${styles.message} ${
+              msg.role === "user" ? styles.userMsg : styles.botMsg
+            }`}
+          >
+            {msg.text}
+          </div>
+        ))}
+
+        {loading && (
+          <div className={styles.message + " " + styles.botMsg}>
+            Thinking...
+          </div>
+        )}
+
+        {/* Invisible element to scroll to */}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className={styles.inputArea}>
+        <input
+          className={styles.input}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSend()} // Send on Enter key
+          placeholder="Type a message..."
+          disabled={loading}
         />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        <button
+          className={styles.sendBtn}
+          onClick={handleSend}
+          disabled={loading}
+        >
+          ➤
+        </button>
+      </div>
     </div>
   );
 }
