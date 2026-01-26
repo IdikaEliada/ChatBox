@@ -47,9 +47,13 @@ export async function POST(req) {
     return NextResponse.json({ text });
   } catch (error) {
     console.error("API Error:", error);
+
+    // detailed error logging
+    const status = error.status || (error.message?.includes("429") ? 429 : 500);
+
     return NextResponse.json(
       { error: error.message || "An unexpected error occurred." },
-      { status: 500 },
+      { status: status },
     );
   }
 }

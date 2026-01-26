@@ -45,11 +45,14 @@ export default function Chat() {
       // 3. Add the AI's response to the list
       setMessages([...newHistory, { role: "model", text: response.data.text }]);
     } catch (error) {
-      console.error("Error:", error);
-      const errorMessage =
-        error.response?.data?.error ||
-        "Sorry, I encountered an error. Try again!";
-      setMessages([...newHistory, { role: "model", text: errorMessage }]);
+      if (error.response?.status === 429) {
+        const errorMessage = "Too many requests. Please try again later.";
+        setMessages([...newHistory, { role: "model", text: errorMessage }]);
+      } else {
+        console.error("Error:", error);
+        const errorMessage = "Sorry, I encountered an error. Try again!";
+        setMessages([...newHistory, { role: "model", text: errorMessage }]);
+      }
     }
 
     setLoading(false); // Stop loading
